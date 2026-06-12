@@ -1,0 +1,29 @@
+name: Autograding Tests
+'on':
+- workflow_dispatch
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: correctness
+      id: correctness
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: correctness
+        setup-command: 'make '
+        command: make test
+        timeout: 10
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        CORRECTNESS_RESULTS: "${{steps.correctness.outputs.result}}"
+      with:
+        runners: correctness
